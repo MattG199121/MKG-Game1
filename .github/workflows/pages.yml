@@ -27,8 +27,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Add game setup systems to page
-        run: sed -i 's#</body>#<script src="abilities.js?v=20260809-2311"></script><script src="avatars.js?v=20260809-2311"></script></body>#' index.html
+      - name: Add Leaflet map support
+        run: sed -i 's#</head>#<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" /></head>#' index.html
+
+      - name: Add game systems to page
+        run: sed -i 's#</body>#<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script><script src="abilities.js?v=20260809-2315"></script><script src="avatars.js?v=20260809-2315"></script><script src="mapgame.js?v=20260809-2315"></script></body>#' index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
