@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<title>Shepperton Life</title>
+<style>
+:root{--bg:#111827;--panel:#0f172acc;--line:#334155;--text:#f8fafc;--muted:#cbd5e1;--accent:#60a5fa;--good:#34d399;--warn:#fbbf24;--danger:#fb7185}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;background:#0b1220;color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}.screen{position:fixed;inset:0}.hidden{display:none!important}
+#title{display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#1d4ed8 0,#0f172a 40%,#020617 100%);padding:24px}.title-card{width:min(620px,94vw);padding:34px;border:1px solid #334155;background:#0f172ad9;border-radius:28px;box-shadow:0 30px 80px #0008;text-align:center}.eyebrow{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#93c5fd}.title-card h1{font-size:clamp(46px,10vw,82px);line-height:.88;margin:14px 0 12px}.title-card p{color:#cbd5e1;font-size:17px;line-height:1.55}.primary{border:0;border-radius:16px;padding:16px 22px;font-size:17px;font-weight:800;background:#fff;color:#0f172a;min-width:180px;cursor:pointer}.small{font-size:13px;color:#94a3b8;margin-top:18px}
+#game{background:#0b1220}#canvas{width:100%;height:100%;display:block;touch-action:none}.hud{position:absolute;left:max(14px,env(safe-area-inset-left));top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));display:flex;gap:10px;justify-content:space-between;pointer-events:none}.hudbox{background:var(--panel);backdrop-filter:blur(12px);border:1px solid #334155;border-radius:16px;padding:10px 13px;box-shadow:0 10px 30px #0004;min-width:0}.hud-main{display:flex;gap:14px;align-items:center}.money{font-weight:900;color:#86efac}.time{font-weight:800}.district{color:#93c5fd;font-weight:700;white-space:nowrap}.stats{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#e2e8f0}.stat b{color:#fff}.bottom-ui{position:absolute;inset:auto 0 max(12px,env(safe-area-inset-bottom)) 0;display:flex;justify-content:space-between;align-items:end;padding:0 max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));pointer-events:none}.dpad{width:170px;height:170px;position:relative;pointer-events:auto}.dpad button,.action{position:absolute;border:1px solid #64748b80;background:#0f172acc;color:white;backdrop-filter:blur(10px);font-weight:900;box-shadow:0 8px 20px #0004}.dpad button{width:54px;height:54px;border-radius:17px;font-size:24px}.up{left:58px;top:0}.left{left:0;top:58px}.right{right:0;top:58px}.down{left:58px;bottom:0}.action-wrap{position:relative;width:150px;height:170px;pointer-events:auto}.action{right:4px;bottom:18px;width:92px;height:92px;border-radius:50%;font-size:16px}.action.active{background:#2563ebdd}.prompt{position:absolute;left:50%;bottom:max(188px,calc(env(safe-area-inset-bottom) + 188px));transform:translateX(-50%);background:#020617dc;border:1px solid #475569;border-radius:14px;padding:10px 14px;max-width:min(520px,86vw);text-align:center;font-weight:700;pointer-events:none}.modal{position:absolute;inset:0;display:grid;place-items:center;background:#02061799;padding:20px;z-index:10}.modal-card{width:min(520px,94vw);background:#0f172a;border:1px solid #475569;border-radius:24px;padding:24px;box-shadow:0 30px 80px #000b}.modal-card h2{margin:0 0 8px;font-size:28px}.modal-card p{color:#cbd5e1;line-height:1.5}.choices{display:grid;gap:10px;margin-top:18px}.choices button{border:1px solid #475569;background:#1e293b;color:#fff;border-radius:14px;padding:14px;text-align:left;font:inherit;font-weight:750}.choices button:hover{background:#334155}.close{margin-top:14px;width:100%;border:0;background:#e2e8f0;color:#0f172a;border-radius:14px;padding:13px;font-weight:850}.toast{position:absolute;top:92px;left:50%;transform:translateX(-50%);background:#020617e8;border:1px solid #475569;border-radius:14px;padding:11px 15px;font-weight:800;opacity:0;transition:.25s;pointer-events:none}.toast.show{opacity:1}.legend{position:absolute;right:14px;top:86px;background:#0f172abf;border:1px solid #334155;border-radius:12px;padding:8px 10px;font-size:11px;color:#cbd5e1;pointer-events:none}@media (max-width:740px){.legend{display:none}.hud{gap:7px}.stats{display:none}.hudbox{padding:8px 10px}.district{font-size:12px}.dpad{transform:scale(.88);transform-origin:left bottom}.action-wrap{transform:scale(.88);transform-origin:right bottom}.prompt{bottom:172px}}
+</style>
+</head>
+<body>
+<section id="title" class="screen">
+  <div class="title-card">
+    <div class="eyebrow">MKG Game 1 • Prototype 0.1</div>
+    <h1>Shepperton<br>Life</h1>
+    <p>Start at home with £35, a full day ahead of you, and no fixed path. Work, study, train, explore and build a life around a fictionalised Shepperton Village.</p>
+    <button id="newGame" class="primary">New Game</button>
+    <div class="small">Keyboard: WASD / arrow keys • Interact: E or Space • Mobile: on-screen controls</div>
+  </div>
+</section>
+<section id="game" class="screen hidden">
+  <canvas id="canvas"></canvas>
+  <div class="hud">
+    <div class="hudbox hud-main"><span class="money" id="money">£35</span><span class="time" id="clock">08:00</span><span class="district">Shepperton Village</span></div>
+    <div class="hudbox stats"><span class="stat">Energy <b id="energy">100</b></span><span class="stat">Health <b id="health">100</b></span><span class="stat">INT <b id="intelligence">1</b></span><span class="stat">STR <b id="strength">1</b></span><span class="stat">CHA <b id="charisma">1</b></span><span class="stat">REP <b id="rep">0</b></span></div>
+  </div>
+  <div class="legend">Green Lane • Station • Village centre • Recreation ground<br>Businesses are fictionalised for gameplay.</div>
+  <div id="toast" class="toast"></div>
+  <div id="prompt" class="prompt hidden"></div>
+  <div class="bottom-ui">
+    <div class="dpad">
+      <button class="up" data-dir="up">▲</button><button class="left" data-dir="left">◀</button><button class="right" data-dir="right">▶</button><button class="down" data-dir="down">▼</button>
+    </div>
+    <div class="action-wrap"><button id="action" class="action">ACTION</button></div>
+  </div>
+  <div id="modal" class="modal hidden"><div class="modal-card"><h2 id="modalTitle"></h2><p id="modalText"></p><div id="choices" class="choices"></div><button id="closeModal" class="close">Back outside</button></div></div>
+</section>
+<script>
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+const title=document.getElementById('title'),game=document.getElementById('game'),promptEl=document.getElementById('prompt'),actionBtn=document.getElementById('action');
+const modal=document.getElementById('modal'),modalTitle=document.getElementById('modalTitle'),modalText=document.getElementById('modalText'),choices=document.getElementById('choices');
+let DPR=1,W=0,H=0,last=0,near=null,modalOpen=false;
+const keys={up:false,down:false,left:false,right:false};
+const state={money:35,energy:100,health:100,intelligence:1,strength:1,charisma:1,rep:0,minutes:8*60,day:1};
+const world={w:2200,h:1500};
+const player={x:1120,y:610,r:15,speed:220};
+const roads=[
+ {x:0,y:540,w:2200,h:128,name:'GREEN LANE'},
+ {x:540,y:0,w:95,h:600,name:'GOVETT AVENUE'},
+ {x:340,y:430,w:290,h:95,name:'STATION APPROACH'},
+ {x:390,y:650,w:88,h:850,name:'HIGH STREET'},
+ {x:840,y:650,w:80,h:560,name:'BRUCE AVENUE'},
+ {x:1050,y:650,w:82,h:565,name:'KILMISTON AVENUE'},
+ {x:1460,y:650,w:78,h:610,name:'MANYGATE LANE'},
+ {x:1770,y:650,w:78,h:420,name:'WESTERN DRIVE'},
+ {x:2050,y:360,w:100,h:920,name:'GASTON BRIDGE ROAD'},
+ {x:360,y:1220,w:1690,h:98,name:'RUSSELL ROAD'}
+];
+const blocks=[
+ {x:40,y:110,w:470,h:330,c:'#334155'},{x:650,y:120,w:480,h:350,c:'#374151'},{x:1190,y:90,w:740,h:380,c:'#334155'},
+ {x:60,y:720,w:270,h:430,c:'#374151'},{x:500,y:720,w:300,h:450,c:'#334155'},{x:950,y:720,w:450,h:430,c:'#374151'},{x:1570,y:720,w:410,h:430,c:'#334155'},
+ {x:520,y:1340,w:640,h:120,c:'#14532d'},{x:1200,y:1280,w:720,h:180,c:'#14532d'}
+];
+const buildings=[
+ {id:'home',name:'Home',x:1070,y:455,w:105,h:82,color:'#a16207',desc:'Your starting home. A safe place to sleep, save your progress and recover.',actions:[['Sleep until 08:00','sleep'],['Have a quick meal (-£3, +25 Energy)','meal']]},
+ {id:'station',name:'Shepperton Station',x:330,y:455,w:150,h:70,color:'#2563eb',desc:'The station will eventually unlock travel to other districts.',actions:[['Check departures','departures']]},
+ {id:'cafe',name:'The Corner Cup',x:505,y:675,w:140,h:90,color:'#b45309',desc:'A small café near the village centre. Good for cheap food and early work.',actions:[['Buy breakfast (-£6, +35 Energy)','breakfast'],['Work 3 hours (+£27)','cafejob']]},
+ {id:'shop',name:'Village Mart',x:670,y:675,w:150,h:90,color:'#047857',desc:'A convenience store for food and everyday supplies.',actions:[['Buy snack (-£3, +18 Energy)','snack'],['Work 4 hours (+£36)','shopjob']]},
+ {id:'bank',name:'Crown Bank',x:845,y:455,w:150,h:82,color:'#4338ca',desc:'The local bank. Savings and investments will be added in a later build.',actions:[['Check account','account']]},
+ {id:'library',name:'Shepperton Learning Hub',x:1170,y:675,w:175,h:100,color:'#7c3aed',desc:'Study here to increase Intelligence and unlock better careers.',actions:[['Study 2 hours (-20 Energy, +1 INT)','study']]},
+ {id:'gym',name:'Forge Fitness',x:1380,y:455,w:165,h:82,color:'#be123c',desc:'Train Strength and improve your physical career options.',actions:[['Train 90 mins (-25 Energy, -£5, +1 STR)','train']]},
+ {id:'pub',name:'The Riverside Fox',x:1590,y:675,w:170,h:100,color:'#92400e',desc:'A lively pub where socialising improves Charisma.',actions:[['Socialise 2 hours (-£12, +1 CHA)','social']]},
+ {id:'office',name:'MKG Services',x:1720,y:455,w:180,h:82,color:'#0f766e',desc:'An office employer. Better Intelligence means better pay.',actions:[['Work 5 hours','officejob']]},
+ {id:'rec',name:'Shepperton Recreation Ground',x:1160,y:1020,w:365,h:175,color:'#15803d',desc:'Open space for exercise and future events.',actions:[['Go for a run (1 hour, -15 Energy)','run']]},
+ {id:'estate',name:'Village Estates',x:530,y:900,w:170,h:95,color:'#0369a1',desc:'Property will become a major progression path later.',actions:[['Browse properties','properties']]}
+];
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0)} addEventListener('resize',resize);resize();
+function fmtTime(){let m=state.minutes%(24*60),h=Math.floor(m/60),mm=Math.floor(m%60);return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0')}
+function ui(){money.textContent='£'+state.money;clock.textContent='Day '+state.day+' • '+fmtTime();energy.textContent=Math.round(state.energy);health.textContent=Math.round(state.health);intelligence.textContent=state.intelligence;strength.textContent=state.strength;charisma.textContent=state.charisma;rep.textContent=state.rep}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800)}
+function spend(n){if(state.money<n){toast('Not enough money.');return false}state.money-=n;return true}
+function passTime(mins){state.minutes+=mins;while(state.minutes>=1440){state.minutes-=1440;state.day++}state.energy=Math.max(0,state.energy-mins/30);ui()}
+function doAction(a){
+ if(a==='sleep'){state.day++;state.minutes=480;state.energy=100;state.health=Math.min(100,state.health+10);toast('You slept well. Day '+state.day+'.')}
+ if(a==='meal'&&spend(3)){state.energy=Math.min(100,state.energy+25);passTime(20)}
+ if(a==='breakfast'&&spend(6)){state.energy=Math.min(100,state.energy+35);passTime(30)}
+ if(a==='snack'&&spend(3)){state.energy=Math.min(100,state.energy+18);passTime(10)}
+ if(a==='cafejob'){if(state.energy<18)return toast('Too tired to work.');state.money+=27;state.rep++;passTime(180);toast('Shift complete: +£27')}
+ if(a==='shopjob'){if(state.energy<25)return toast('Too tired to work.');state.money+=36;state.rep++;passTime(240);toast('Shift complete: +£36')}
+ if(a==='officejob'){if(state.energy<30)return toast('Too tired to work.');const pay=45+(state.intelligence-1)*8;state.money+=pay;state.rep+=2;passTime(300);toast('Office shift complete: +£'+pay)}
+ if(a==='study'){if(state.energy<20)return toast('Too tired to study.');state.intelligence++;passTime(120);toast('Intelligence increased.')}
+ if(a==='train'){if(state.energy<25)return toast('Too tired to train.');if(!spend(5))return;state.strength++;passTime(90);toast('Strength increased.')}
+ if(a==='social'){if(!spend(12))return;state.charisma++;passTime(120);toast('Charisma increased.')}
+ if(a==='run'){if(state.energy<15)return toast('Too tired to run.');state.strength+=1;passTime(60);toast('Good run. Strength increased.')}
+ if(a==='account')toast('Current balance: £'+state.money+'. Savings accounts coming soon.')
+ if(a==='departures')toast('Travel is locked in Prototype 0.1.')
+ if(a==='properties')toast('Property market coming in the next expansion.')
+ ui();save();
+}
+function openBuilding(b){modalOpen=true;modal.classList.remove('hidden');modalTitle.textContent=b.name;modalText.textContent=b.desc;choices.innerHTML='';b.actions.forEach(([label,a])=>{const btn=document.createElement('button');btn.textContent=label;btn.onclick=()=>doAction(a);choices.appendChild(btn)})}
+function closeModal(){modalOpen=false;modal.classList.add('hidden')}document.getElementById('closeModal').onclick=closeModal;
+function save(){localStorage.setItem('sheppertonLifeSave',JSON.stringify({state,player:{x:player.x,y:player.y}}))}
+function newGame(){localStorage.removeItem('sheppertonLifeSave');Object.assign(state,{money:35,energy:100,health:100,intelligence:1,strength:1,charisma:1,rep:0,minutes:480,day:1});player.x=1120;player.y=590;title.classList.add('hidden');game.classList.remove('hidden');ui();toast('Day 1. You step outside Home.')}
+document.getElementById('newGame').onclick=newGame;
+function mapKey(k,v){if(k==='ArrowUp'||k==='w'||k==='W')keys.up=v;if(k==='ArrowDown'||k==='s'||k==='S')keys.down=v;if(k==='ArrowLeft'||k==='a'||k==='A')keys.left=v;if(k==='ArrowRight'||k==='d'||k==='D')keys.right=v}
+addEventListener('keydown',e=>{mapKey(e.key,true);if((e.key==='e'||e.key==='E'||e.key===' ')&&!modalOpen){e.preventDefault();interact()}if(e.key==='Escape'&&modalOpen)closeModal()});addEventListener('keyup',e=>mapKey(e.key,false));
+document.querySelectorAll('[data-dir]').forEach(btn=>{const d=btn.dataset.dir;['pointerdown','touchstart'].forEach(ev=>btn.addEventListener(ev,e=>{e.preventDefault();keys[d]=true}));['pointerup','pointercancel','pointerleave','touchend'].forEach(ev=>btn.addEventListener(ev,e=>{e.preventDefault();keys[d]=false}))});
+actionBtn.addEventListener('pointerdown',e=>{e.preventDefault();interact()});
+function interact(){if(near)openBuilding(near)}
+function distToRect(px,py,b){const cx=Math.max(b.x,Math.min(px,b.x+b.w)),cy=Math.max(b.y,Math.min(py,b.y+b.h));return Math.hypot(px-cx,py-cy)}
+function update(dt){if(modalOpen)return;let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);if(dx||dy){const l=Math.hypot(dx,dy);dx/=l;dy/=l;player.x=Math.max(18,Math.min(world.w-18,player.x+dx*player.speed*dt));player.y=Math.max(18,Math.min(world.h-18,player.y+dy*player.speed*dt));state.minutes+=dt*.45;state.energy=Math.max(0,state.energy-dt*.012)}near=null;let best=54;for(const b of buildings){const d=distToRect(player.x,player.y,b);if(d<best){best=d;near=b}}if(near){promptEl.textContent='ACTION • '+near.name;promptEl.classList.remove('hidden');actionBtn.classList.add('active')}else{promptEl.classList.add('hidden');actionBtn.classList.remove('active')}ui()}
+function camera(){return{x:Math.max(0,Math.min(world.w-W,player.x-W/2)),y:Math.max(0,Math.min(world.h-H,player.y-H/2))}}
+function drawRoad(r,c){ctx.fillStyle='#475569';ctx.fillRect(r.x-c.x,r.y-c.y,r.w,r.h);ctx.strokeStyle='#94a3b8';ctx.lineWidth=2;ctx.setLineDash([18,18]);if(r.w>r.h){ctx.beginPath();ctx.moveTo(r.x-c.x,r.y+r.h/2-c.y);ctx.lineTo(r.x+r.w-c.x,r.y+r.h/2-c.y);ctx.stroke()}else{ctx.beginPath();ctx.moveTo(r.x+r.w/2-c.x,r.y-c.y);ctx.lineTo(r.x+r.w/2-c.x,r.y+r.h-c.y);ctx.stroke()}ctx.setLineDash([])}
+function draw(){const c=camera();ctx.clearRect(0,0,W,H);ctx.fillStyle='#1f2937';ctx.fillRect(0,0,W,H);for(const b of blocks){ctx.fillStyle=b.c;ctx.fillRect(b.x-c.x,b.y-c.y,b.w,b.h)}for(const r of roads)drawRoad(r,c);
+ ctx.fillStyle='#64748b';ctx.font='700 13px system-ui';ctx.textAlign='center';for(const r of roads){if(r.w>r.h)ctx.fillText(r.name,r.x+r.w/2-c.x,r.y+r.h/2-c.y-14);else{ctx.save();ctx.translate(r.x+r.w/2-c.x,r.y+r.h/2-c.y);ctx.rotate(-Math.PI/2);ctx.fillText(r.name,0,-14);ctx.restore()}}
+ for(const b of buildings){ctx.fillStyle=b.color;ctx.fillRect(b.x-c.x,b.y-c.y,b.w,b.h);ctx.strokeStyle=near===b?'#fff':'#cbd5e1';ctx.lineWidth=near===b?4:1.5;ctx.strokeRect(b.x-c.x,b.y-c.y,b.w,b.h);ctx.fillStyle='#fff';ctx.font='800 14px system-ui';ctx.textAlign='center';ctx.fillText(b.name,b.x+b.w/2-c.x,b.y+b.h/2-c.y+5)}
+ ctx.save();ctx.translate(player.x-c.x,player.y-c.y);ctx.strokeStyle='#020617';ctx.lineWidth=4;ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.arc(0,-10,8,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(0,-2);ctx.lineTo(0,18);ctx.moveTo(-10,6);ctx.lineTo(10,6);ctx.moveTo(0,18);ctx.lineTo(-9,31);ctx.moveTo(0,18);ctx.lineTo(9,31);ctx.stroke();ctx.restore();
+ ctx.fillStyle='#0f172acc';ctx.fillRect(14,H-52,250,34);ctx.fillStyle='#e2e8f0';ctx.textAlign='left';ctx.font='700 12px system-ui';ctx.fillText('Prototype map • Inspired by Shepperton Village',26,H-31)}
+function loop(t){const dt=Math.min(.033,(t-last)/1000||0);last=t;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);ui();
+</script>
+</body>
+</html>
