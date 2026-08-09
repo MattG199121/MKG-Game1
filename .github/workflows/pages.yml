@@ -27,6 +27,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Add ability system to game page
+        run: sed -i 's#</body>#<script src="abilities.js"></script></body>#' index.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
