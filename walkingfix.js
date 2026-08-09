@@ -1,0 +1,1 @@
+(()=>{const s=document.createElement('style');s.textContent='#game #walkMiniCanvas{display:block!important;width:100%;height:100%}';document.head.appendChild(s)})();
