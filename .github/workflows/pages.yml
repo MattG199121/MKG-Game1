@@ -28,7 +28,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Add game systems to page
-        run: sed -i 's#</body>#<script src="abilities.js?v=20260810-2125"></script><script src="avatars.js?v=20260810-2125"></script><script src="geoengine-live.js?v=20260810-2125"></script><script src="zoomfix.js?v=20260810-2125"></script></body>#' index.html
+        run: sed -i 's#</body>#<script src="abilities.js?v=20260810-2148"></script><script src="avatars.js?v=20260810-2148"></script><script src="geoengine-v2.js?v=20260810-2148"></script></body>#' index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
