@@ -1,5 +1,5 @@
 import { DEFAULT_SETTINGS, GAME_VERSION, HOME_POSITION } from './defaultState';
-import type { GameState } from './types';
+import type { AvatarId, GameState } from './types';
 
 export const SAVE_KEY = 'shepperton-life-rpg.save.v2';
 export const BACKUP_KEY = 'shepperton-life-rpg.save.backup';
@@ -18,6 +18,7 @@ export interface LoadResult {
 
 const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 const record = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+const avatarId = (value: unknown): value is AvatarId => value === 'harry' || value === 'phil' || value === 'matt';
 
 export function validateSave(value: unknown): value is GameState {
   if (!record(value) || value.schemaVersion !== 2 || !record(value.player) || !record(value.time)) return false;
@@ -28,7 +29,7 @@ export function validateSave(value: unknown): value is GameState {
     typeof value.savedAt === 'string' &&
     typeof player.name === 'string' &&
     player.name.length > 0 &&
-    record(player.appearance) &&
+    avatarId(player.avatarId) &&
     finite(player.cash) && player.cash >= 0 &&
     finite(player.bankBalance) && player.bankBalance >= 0 &&
     finite(player.health) && finite(player.maxHealth) && player.health >= 0 && player.health <= player.maxHealth &&
@@ -44,26 +45,25 @@ export function validateSave(value: unknown): value is GameState {
 
 export function migrateSave(value: unknown): GameState | null {
   if (validateSave(value)) return value;
+  if (record(value) && value.schemaVersion === 2 && record(value.player)) {
+    const migrated = structuredClone(value) as unknown as GameState;
+    migrated.player.avatarId = 'matt';
+    migrated.player.name = 'Matt';
+    if (validateSave(migrated)) return migrated;
+  }
   if (!record(value) || value.schemaVersion !== 1 || !record(value.player)) return null;
   const oldPlayer = value.player;
   if (typeof oldPlayer.name !== 'string') return null;
   const strength = finite(oldPlayer.strength) ? oldPlayer.strength : 1;
   const maxHealth = 100 + Math.max(0, strength - 1) * 2;
   const timeHours = finite(value.timeHours) ? value.timeHours : 8;
-  const appearance = record(oldPlayer.appearance) ? oldPlayer.appearance : {};
   const migrated: GameState = {
     schemaVersion: 2,
     gameVersion: GAME_VERSION,
     savedAt: new Date().toISOString(),
     player: {
-      name: oldPlayer.name,
-      appearance: {
-        body: appearance.body === 'compact' || appearance.body === 'tall' ? appearance.body : 'average',
-        skinTone: typeof appearance.skinTone === 'string' ? appearance.skinTone : '#d8a47f',
-        topColour: typeof appearance.topColour === 'string' ? appearance.topColour : '#2f6f8f',
-        legColour: typeof appearance.legColour === 'string' ? appearance.legColour : '#26364a',
-        head: appearance.head === 'swept' || appearance.head === 'beanie' ? appearance.head : 'short',
-      },
+      name: 'Matt',
+      avatarId: 'matt',
       background: 'local',
       cash: finite(oldPlayer.cash) ? Math.max(0, oldPlayer.cash) : 40,
       bankBalance: finite(oldPlayer.bankBalance) ? Math.max(0, oldPlayer.bankBalance) : 0,

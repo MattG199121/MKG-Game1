@@ -1,10 +1,10 @@
 import { ACTIVITIES, ITEMS, JOBS, LOCATIONS, OBJECTIVES, itemById, jobById, locationById } from '../core/content';
-import { adjustAllocation, allocationIsComplete, createAllocation, type AllocationState } from '../core/character';
+import { adjustAllocation, allocationIsComplete, createAllocation, cycleAvatar, type AllocationState } from '../core/character';
 import { createNewGame, DEFAULT_SETTINGS } from '../core/defaultState';
 import { GameEngine } from '../core/gameEngine';
 import { SaveManager } from '../core/saveManager';
 import { formatHours, formatTime, WEEKDAYS } from '../core/time';
-import type { ActionResult, Appearance, AttributeKey, CharacterDraft, GameState, SettingsState } from '../core/types';
+import type { ActionResult, AttributeKey, CharacterDraft, GameState, SettingsState } from '../core/types';
 import { locationPrompt, WorldView } from '../game/WorldScene';
 
 const SETTINGS_KEY = 'shepperton-life-rpg.settings';
@@ -24,8 +24,7 @@ export class SheppertonApp {
   private world: WorldView | null = null;
   private allocation: AllocationState = createAllocation();
   private draft: CharacterDraft = {
-    name: '',
-    appearance: { body: 'average', skinTone: '#d8a47f', topColour: '#286f78', legColour: '#26364a', head: 'short' },
+    avatarId: 'matt',
     background: 'local',
     attributes: { strength: 1, intelligence: 1, charm: 1 },
   };
@@ -107,19 +106,16 @@ export class SheppertonApp {
         </header>
         <div class="creation-grid">
           <section class="preview-panel">
-            ${this.characterPreview(this.draft.appearance)}
-            <p>Every character is drawn from original in-game shapes.</p>
+            <div class="avatar-picker">
+              <button data-avatar-direction="-1" aria-label="Previous avatar">←</button>
+              <img src="${import.meta.env.BASE_URL}avatars/${this.draft.avatarId}-preview.png" alt="${html(this.avatarName())}" width="36" height="54" />
+              <button data-avatar-direction="1" aria-label="Next avatar">→</button>
+              <strong>${html(this.avatarName())}</strong>
+            </div>
+            <p>Choose your character with the arrows.</p>
           </section>
           <section class="form-panel">
-            <label class="field-label" for="character-name">What should people call you?</label>
-            <input id="character-name" class="input" maxlength="18" autocomplete="off" value="${html(this.draft.name)}" placeholder="Enter a name" />
-            <div class="custom-grid">
-              ${this.selectField('Body', 'body', [['compact', 'Compact'], ['average', 'Average'], ['tall', 'Tall']], this.draft.appearance.body)}
-              ${this.selectField('Hair / head', 'head', [['short', 'Short'], ['swept', 'Swept'], ['beanie', 'Beanie']], this.draft.appearance.head)}
-              ${this.colourField('Skin tone', 'skinTone', this.draft.appearance.skinTone)}
-              ${this.colourField('Top colour', 'topColour', this.draft.appearance.topColour)}
-              ${this.colourField('Legwear', 'legColour', this.draft.appearance.legColour)}
-            </div>
+            <div class="selected-avatar-name"><span>Your character</span><strong>${html(this.avatarName())}</strong></div>
             <label class="field-label" for="background">Starting background</label>
             <select id="background" class="input" data-appearance="background">
               <option value="local" ${this.draft.background === 'local' ? 'selected' : ''}>Village Regular — £5 and +1 reputation</option>
@@ -148,20 +144,21 @@ export class SheppertonApp {
   }
 
   private bindCreationEvents(): void {
-    this.root.querySelector<HTMLInputElement>('#character-name')?.addEventListener('input', (event) => {
-      this.draft.name = (event.target as HTMLInputElement).value;
+    this.root.querySelectorAll<HTMLButtonElement>('[data-avatar-direction]').forEach((button) => {
+      button.addEventListener('click', () => {
+        this.draft.avatarId = cycleAvatar(this.draft.avatarId, Number(button.dataset.avatarDirection) as -1 | 1);
+        this.renderCharacterCreation();
+      });
     });
     this.root.querySelectorAll<HTMLSelectElement | HTMLInputElement>('[data-appearance]').forEach((control) => {
       control.addEventListener('change', () => {
         const key = control.dataset.appearance;
         if (key === 'background') this.draft.background = control.value as CharacterDraft['background'];
-        else if (key) (this.draft.appearance as unknown as Record<string, string>)[key] = control.value;
         this.renderCharacterCreation();
       });
     });
     this.root.querySelectorAll<HTMLButtonElement>('[data-stat]').forEach((button) => {
       button.addEventListener('click', () => {
-        this.draft.name = this.root.querySelector<HTMLInputElement>('#character-name')?.value ?? this.draft.name;
         this.allocation = adjustAllocation(this.allocation, button.dataset.stat as AttributeKey, Number(button.dataset.delta) as -1 | 1);
         this.renderCharacterCreation();
       });
@@ -180,17 +177,11 @@ export class SheppertonApp {
   }
 
   private confirmCharacter(): void {
-    const name = this.root.querySelector<HTMLInputElement>('#character-name')?.value.trim() ?? '';
     const error = this.root.querySelector<HTMLElement>('#create-error');
-    if (!name) {
-      if (error) error.textContent = 'Enter a name before starting.';
-      return;
-    }
     if (!allocationIsComplete(this.allocation)) {
       if (error) error.textContent = `Spend the remaining ${this.allocation.remaining} points.`;
       return;
     }
-    this.draft.name = name;
     this.draft.attributes = { ...this.allocation.attributes };
     const state = createNewGame(this.draft);
     state.settings = { ...this.settings };
@@ -586,16 +577,8 @@ export class SheppertonApp {
     return date.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
 
-  private characterPreview(appearance: Appearance): string {
-    return `<div class="character-preview ${appearance.body}" style="--skin:${html(appearance.skinTone)};--top:${html(appearance.topColour)};--legs:${html(appearance.legColour)}"><div class="preview-shadow"></div><div class="preview-head ${appearance.head}"><i></i></div><div class="preview-body"></div><div class="preview-arm a1"></div><div class="preview-arm a2"></div><div class="preview-leg l1"></div><div class="preview-leg l2"></div></div>`;
-  }
-
-  private selectField(label: string, key: string, options: [string, string][], selected: string): string {
-    return `<label><span>${label}</span><select class="input" data-appearance="${key}">${options.map(([value, text]) => `<option value="${value}" ${selected === value ? 'selected' : ''}>${text}</option>`).join('')}</select></label>`;
-  }
-
-  private colourField(label: string, key: string, value: string): string {
-    return `<label class="colour-field"><span>${label}</span><div><input type="color" value="${html(value)}" data-appearance="${key}" aria-label="${label}"><b>${html(value)}</b></div></label>`;
+  private avatarName(): string {
+    return this.draft.avatarId[0].toUpperCase() + this.draft.avatarId.slice(1);
   }
 
   private rangeSetting(label: string, key: string, value: number): string {
