@@ -17,6 +17,7 @@ Milestone 1 is implemented, merged into `main` and deployed to GitHub Pages.
 - Versioned save, backup, validation, reset and simulated schema migration.
 - Responsive iPad landscape UI, safe-area padding, large touch targets, focus styles and reduced-motion setting.
 - GitHub Actions workflow for PR tests/builds and main-branch Pages deployment.
+- Shepperton Village Hall renamed and redrawn as a cream-and-sage, west-facing hall behind the pavement, with matching entrance interaction and rotated collision footprint.
 
 ## Verification status
 

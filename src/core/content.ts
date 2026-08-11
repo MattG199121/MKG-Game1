@@ -10,7 +10,7 @@ export const LOCATIONS: LocationDefinition[] = [
   { id: 'office', name: 'Thameside Services', strapline: 'Spreadsheets, headsets and proper biscuits.', kind: 'work', hours: { open: 8 * 60, close: 19 * 60 } },
   { id: 'secondhand', name: 'Second Spin', strapline: 'Pre-loved things with at least one good story.', kind: 'shop', hours: { open: 10 * 60, close: 17 * 60 } },
   { id: 'station', name: 'Shepperton Station', strapline: 'Trains today; new districts in a later milestone.', kind: 'travel', hours: { open: 5 * 60, close: 23 * 60 } },
-  { id: 'community', name: 'Riverside Community Hall', strapline: 'Clubs, neighbours and surprisingly competitive quizzes.', kind: 'social', hours: { open: 9 * 60, close: 21 * 60 } },
+  { id: 'community', name: 'Shepperton Village Hall', strapline: 'A friendly village hall for clubs, neighbours and community events.', kind: 'social', hours: { open: 9 * 60, close: 21 * 60 } },
   { id: 'green', name: 'Orchard Green', strapline: 'A pocket of calm in the middle of the village.', kind: 'social' },
   { id: 'studio', name: 'Lockside Studio', strapline: 'A creative workspace for trusted locals.', kind: 'locked', hours: { open: 10 * 60, close: 20 * 60 }, lockedRequirement: { reputation: 5 } },
 ];
@@ -33,7 +33,7 @@ export const ITEMS: ItemDefinition[] = [
 export const ACTIVITIES: ActivityDefinition[] = [
   { id: 'gym-session', name: 'Training session', locationId: 'gym', description: '+1 Strength', moneyCost: 8, energyCost: 18, timeCost: 60, attribute: 'strength', attributeGain: 1 },
   { id: 'study-session', name: 'Focused study', locationId: 'library', description: '+1 Intelligence', moneyCost: 2, energyCost: 12, timeCost: 90, attribute: 'intelligence', attributeGain: 1 },
-  { id: 'community-session', name: 'Help at the community hall', locationId: 'community', description: '+1 Charm and +2 reputation', moneyCost: 0, energyCost: 10, timeCost: 75, attribute: 'charm', attributeGain: 1, reputationGain: 2 },
+  { id: 'community-session', name: 'Help at Shepperton Village Hall', locationId: 'community', description: '+1 Charm and +2 reputation', moneyCost: 0, energyCost: 10, timeCost: 75, attribute: 'charm', attributeGain: 1, reputationGain: 2 },
   { id: 'park-chat', name: 'Join the park gathering', locationId: 'green', description: '+1 reputation', moneyCost: 0, energyCost: 4, timeCost: 45, reputationGain: 1 },
   { id: 'studio-workshop', name: 'Creative workshop', locationId: 'studio', description: '+1 Charm and +1 Intelligence', moneyCost: 12, energyCost: 10, timeCost: 90, attribute: 'charm', attributeGain: 1, reputationGain: 1, requirements: [{ reputation: 5 }] },
 ];
