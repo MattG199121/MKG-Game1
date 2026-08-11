@@ -24,8 +24,8 @@ export function createNewGame(draft: CharacterDraft): GameState {
     gameVersion: GAME_VERSION,
     savedAt: new Date().toISOString(),
     player: {
-      name: draft.name,
-      appearance: draft.appearance,
+      name: draft.avatarId[0].toUpperCase() + draft.avatarId.slice(1),
+      avatarId: draft.avatarId,
       background: draft.background,
       cash: 40 + backgroundBonuses.cash,
       bankBalance: 0,

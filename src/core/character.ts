@@ -1,4 +1,11 @@
-import type { AttributeKey } from './types';
+import type { AttributeKey, AvatarId } from './types';
+
+export const AVATARS: readonly AvatarId[] = ['harry', 'phil', 'matt'];
+
+export function cycleAvatar(current: AvatarId, delta: -1 | 1): AvatarId {
+  const index = AVATARS.indexOf(current);
+  return AVATARS[(index + delta + AVATARS.length) % AVATARS.length];
+}
 
 export const STARTING_ATTRIBUTE = 1;
 export const BONUS_POINTS = 10;

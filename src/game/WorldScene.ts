@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { locationById } from '../core/content';
 import { HOME_POSITION } from '../core/defaultState';
 import type { GameEngine } from '../core/gameEngine';
-import type { Appearance } from '../core/types';
 import { BUILDINGS, INTERACTIONS, WORLD_HEIGHT, WORLD_WIDTH } from './worldData';
 
 export interface DirectionState {
@@ -25,18 +24,24 @@ export class WorldScene extends Phaser.Scene {
   private obstacles!: Phaser.Physics.Arcade.StaticGroup;
   private nearbyLocation: string | null = null;
   private startedAwayFromHome = false;
+  private facing: 'north' | 'south' | 'east' | 'west' = 'south';
   readonly touch: DirectionState = { up: false, down: false, left: false, right: false };
 
   constructor(private readonly engine: GameEngine, private readonly callbacks: WorldCallbacks) {
     super({ key: 'world' });
   }
 
+  preload(): void {
+    const avatarId = this.engine.getState().player.avatarId;
+    this.load.spritesheet('player-avatar', `${import.meta.env.BASE_URL}avatars/${avatarId}.png`, { frameWidth: 36, frameHeight: 54 });
+  }
+
   create(): void {
     this.physics.world.setBounds(24, 24, WORLD_WIDTH - 48, WORLD_HEIGHT - 48);
     this.drawWorld();
-    this.createPlayerTextures(this.engine.getState().player.appearance);
+    this.createPlayerAnimations();
     const saved = this.engine.getState().player.position;
-    this.player = this.physics.add.sprite(saved.x, saved.y, 'player-south-0');
+    this.player = this.physics.add.sprite(saved.x, saved.y, 'player-avatar', 0);
     this.player.setDepth(50).setCollideWorldBounds(true);
     this.player.body?.setSize(22, 18).setOffset(7, 31);
     this.obstacles = this.physics.add.staticGroup();
@@ -73,11 +78,11 @@ export class WorldScene extends Phaser.Scene {
       vector.normalize().scale(190);
       this.player.setVelocity(vector.x, vector.y);
       const direction = Math.abs(vector.x) > Math.abs(vector.y) ? (vector.x < 0 ? 'west' : 'east') : vector.y < 0 ? 'north' : 'south';
+      this.facing = direction;
       this.player.play(`walk-${direction}`, true);
     } else {
       this.player.setVelocity(0, 0);
-      const current = this.player.anims.currentAnim?.key?.replace('walk-', '') ?? 'south';
-      this.player.setTexture(`player-${current}-0`);
+      this.player.stop().setTexture('player-avatar').setFrame({ south: 0, north: 1, west: 2, east: 3 }[this.facing]);
     }
     const position = { x: Math.round(this.player.x * 10) / 10, y: Math.round(this.player.y * 10) / 10 };
     this.engine.updatePosition(position.x, position.y, true);
@@ -232,30 +237,10 @@ export class WorldScene extends Phaser.Scene {
     for (let x = 525; x < 1080; x += 120) graphics.strokeCircle(x, 592, 5);
   }
 
-  private createPlayerTextures(appearance: Appearance): void {
-    const dirs = ['north', 'south', 'east', 'west'] as const;
-    for (const direction of dirs) {
-      for (let frame = 0; frame < 2; frame += 1) {
-        const graphics = this.make.graphics({ x: 0, y: 0 });
-        const skin = Phaser.Display.Color.HexStringToColor(appearance.skinTone).color;
-        const top = Phaser.Display.Color.HexStringToColor(appearance.topColour).color;
-        const legs = Phaser.Display.Color.HexStringToColor(appearance.legColour).color;
-        const tall = appearance.body === 'tall' ? 2 : appearance.body === 'compact' ? -2 : 0;
-        const step = frame === 0 ? -2 : 2;
-        graphics.fillStyle(0x000000, 0.2).fillEllipse(18, 49, 27, 8);
-        graphics.fillStyle(legs).fillRoundedRect(10 + step, 31, 7, 17 + tall, 3).fillRoundedRect(20 - step, 31, 7, 17 + tall, 3);
-        graphics.fillStyle(top).fillRoundedRect(7, 17, 22, 20 + tall, 7);
-        graphics.fillStyle(skin).fillCircle(18, 12, 10);
-        if (appearance.head === 'beanie') graphics.fillStyle(0xc55353).fillRoundedRect(8, 3, 20, 9, 5);
-        else if (appearance.head === 'swept') graphics.fillStyle(0x503a2f).fillTriangle(8, 9, 29, 4, 26, 12);
-        else graphics.fillStyle(0x503a2f).fillRoundedRect(9, 3, 18, 7, 4);
-        if (direction === 'south') graphics.fillStyle(0x2f2b29).fillCircle(14, 12, 1.2).fillCircle(22, 12, 1.2);
-        if (direction === 'east') graphics.fillStyle(0x2f2b29).fillCircle(24, 12, 1.2);
-        if (direction === 'west') graphics.fillStyle(0x2f2b29).fillCircle(12, 12, 1.2);
-        graphics.generateTexture(`player-${direction}-${frame}`, 36, 54);
-        graphics.destroy();
-      }
-      this.anims.create({ key: `walk-${direction}`, frames: [{ key: `player-${direction}-0` }, { key: `player-${direction}-1` }], frameRate: 7, repeat: -1 });
+  private createPlayerAnimations(): void {
+    const frameByDirection = { south: 0, north: 1, west: 2, east: 3 } as const;
+    for (const [direction, idleFrame] of Object.entries(frameByDirection)) {
+      this.anims.create({ key: `walk-${direction}`, frames: [{ key: 'player-avatar', frame: idleFrame }, { key: 'player-avatar', frame: idleFrame + 4 }], frameRate: 7, repeat: -1 });
     }
   }
 }

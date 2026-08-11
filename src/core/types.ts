@@ -6,24 +6,17 @@ export interface Point {
   y: number;
 }
 
-export interface Appearance {
-  body: 'compact' | 'average' | 'tall';
-  skinTone: string;
-  topColour: string;
-  legColour: string;
-  head: 'short' | 'swept' | 'beanie';
-}
+export type AvatarId = 'harry' | 'phil' | 'matt';
 
 export interface CharacterDraft {
-  name: string;
-  appearance: Appearance;
+  avatarId: AvatarId;
   background: 'local' | 'bookish' | 'sporty' | 'chatty';
   attributes: Record<AttributeKey, number>;
 }
 
 export interface PlayerState {
   name: string;
-  appearance: Appearance;
+  avatarId: AvatarId;
   background: CharacterDraft['background'];
   cash: number;
   bankBalance: number;

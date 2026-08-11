@@ -3,8 +3,7 @@ import { createNewGame } from './defaultState';
 import { GameEngine } from './gameEngine';
 
 const state = () => createNewGame({
-  name: 'Alex',
-  appearance: { body: 'average', skinTone: '#d8a47f', topColour: '#286f78', legColour: '#26364a', head: 'short' },
+  avatarId: 'harry',
   background: 'local',
   attributes: { strength: 4, intelligence: 4, charm: 5 },
 });
