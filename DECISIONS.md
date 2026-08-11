@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-08-11 — Shepperton Village Hall orientation
+
+The former Community Hall/Riverside Community Hall is now consistently named Shepperton Village Hall. Its fictional cream-and-sage design uses a north-south footprint behind the eastern pavement, with a west-facing double-door entrance and interaction point toward the road. The collision rectangle matches only the new footprint so the space released by the rotation remains walkable. Opening hours and activity effects remain unchanged.
+
 ## 2026-08-11 — Complete repository replacement
 
 The old single-file map prototype and personalised avatar photographs were removed. Git history preserves the earlier commits. The replacement uses a dedicated branch and reviewable pull request.
