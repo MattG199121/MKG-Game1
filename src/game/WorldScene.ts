@@ -3,7 +3,7 @@ import { locationById } from '../core/content';
 import { HOME_POSITION } from '../core/defaultState';
 import type { GameEngine } from '../core/gameEngine';
 import { BUILDINGS, INTERACTIONS, WORLD_HEIGHT, WORLD_WIDTH } from './worldData';
-import { screenToWorldDirection, VIEW_ORIENTATIONS, type ViewOrientation } from './viewRotation';
+import { avatarCounterRotation, screenToWorldDirection, VIEW_ORIENTATIONS, type ViewOrientation } from './viewRotation';
 
 export interface DirectionState {
   up: boolean;
@@ -26,7 +26,7 @@ export class WorldScene extends Phaser.Scene {
   private obstacles!: Phaser.Physics.Arcade.StaticGroup;
   private nearbyLocation: string | null = null;
   private startedAwayFromHome = false;
-  private facing: 'north' | 'south' | 'east' | 'west' = 'south';
+  private facing: 'north' | 'south' | 'east' | 'west' = 'north';
   private viewOrientation: ViewOrientation = 'north';
   private readonly worldLabels: Phaser.GameObjects.Text[] = [];
   readonly touch: DirectionState = { up: false, down: false, left: false, right: false };
@@ -45,7 +45,7 @@ export class WorldScene extends Phaser.Scene {
     this.drawWorld();
     this.createPlayerAnimations();
     const saved = this.engine.getState().player.position;
-    this.player = this.physics.add.sprite(saved.x, saved.y, 'player-avatar', 0);
+    this.player = this.physics.add.sprite(saved.x, saved.y, 'player-avatar', 1);
     this.player.setDepth(50).setCollideWorldBounds(true);
     this.player.body?.setSize(22, 18).setOffset(7, 31);
     this.obstacles = this.physics.add.staticGroup();
@@ -84,7 +84,7 @@ export class WorldScene extends Phaser.Scene {
     if (vector.lengthSq() > 0) {
       vector.normalize().scale(190);
       this.player.setVelocity(vector.x, vector.y);
-      const direction = Math.abs(vector.x) > Math.abs(vector.y) ? (vector.x < 0 ? 'west' : 'east') : vector.y < 0 ? 'north' : 'south';
+      const direction = 'north';
       this.facing = direction;
       this.player.play(`walk-${direction}`, true);
     } else {
@@ -271,6 +271,8 @@ export class WorldScene extends Phaser.Scene {
     const quarterTurns = VIEW_ORIENTATIONS.indexOf(this.viewOrientation);
     this.cameras.main.setRotation(-quarterTurns * Math.PI / 2);
     for (const label of this.worldLabels) label.setRotation(quarterTurns * Math.PI / 2);
+    this.facing = 'north';
+    if (this.player) this.player.setRotation(avatarCounterRotation(this.viewOrientation)).stop().setTexture('player-avatar').setFrame(1);
     this.callbacks.onViewOrientationChanged(this.viewOrientation);
   }
 }
