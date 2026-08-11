@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-Milestone 1 replacement implementation is complete locally and awaiting GitHub publication.
+Milestone 1 is implemented, merged into `main` and deployed to GitHub Pages.
 
 ## Implemented
 
@@ -24,8 +24,10 @@ Milestone 1 replacement implementation is complete locally and awaiting GitHub p
 - TypeScript: strict typecheck passed on 2026-08-11.
 - Production build: Vite build passed on 2026-08-11.
 - Pages subpath: built index, CSS and JavaScript returned HTTP 200 at `/MKG-Game1/` in a local static-server check.
-- Rendered desktop/iPad viewport check: automated browser execution is pending because the workspace has Playwright but its Chromium download CDN returned an empty archive. No visual check is claimed.
-- GitHub PR checks and Pages deployment: pending branch publication/merge.
+- Rendered live-site check: passed in a cloud Chrome browser on 2026-08-11. Title, character creation, complete point allocation, Phaser canvas/HUD, home interaction, manual save, refresh and Continue restoration were exercised successfully.
+- Browser console: no application error was observed; extension-originated cloud-browser logging was excluded from the application result.
+- GitHub PR check: passed checkout, dependency install, tests and production build on PR #1.
+- GitHub Pages deployment: main-branch workflow run 37 completed successfully on 2026-08-11. The public index, CSS and JavaScript return HTTP 200.
 - Physical iPad Safari acceptance: must be performed by the user after the public Pages deployment.
 
 ## Known limitations
@@ -37,7 +39,6 @@ Milestone 1 replacement implementation is complete locally and awaiting GitHub p
 
 ## Immediate next steps
 
-1. Push the replacement branch and open a draft PR.
-2. Inspect the GitHub Actions test/build check and fix any failure.
-3. Merge when accepted and verify the public Pages URL in a real browser.
-4. Perform the physical iPad acceptance check.
+1. Open the public game on a physical iPad in landscape and report any Safari-specific issue.
+2. Upload the four raw reference ZIPs if direct static reinspection is still required.
+3. Continue with the NPC/story milestone after iPad acceptance.
