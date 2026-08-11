@@ -6,6 +6,7 @@ import { SaveManager } from '../core/saveManager';
 import { formatHours, formatTime, WEEKDAYS } from '../core/time';
 import type { ActionResult, AttributeKey, CharacterDraft, GameState, SettingsState } from '../core/types';
 import { locationPrompt, WorldView } from '../game/WorldScene';
+import type { ViewOrientation } from '../game/viewRotation';
 
 const SETTINGS_KEY = 'shepperton-life-rpg.settings';
 
@@ -203,6 +204,7 @@ export class SheppertonApp {
         this.engine?.markLeftHome();
         this.updateHud();
       },
+      onViewOrientationChanged: (orientation) => this.updateViewOrientation(orientation),
     });
     this.engine.subscribe((gameState, reason) => {
       if (reason !== 'loaded') {
@@ -229,6 +231,7 @@ export class SheppertonApp {
             <div><span>Day</span><strong id="hud-day">Monday 1</strong></div>
             <div><span>Time</span><strong id="hud-time">08:00</strong></div>
           </div>
+          <button class="view-rotate" data-game="rotate-view" aria-label="Rotate view. North is currently at the top" title="Rotate view"><span>◆</span><b data-view-orientation>N</b></button>
           <button class="hud-menu" data-game="menu" aria-label="Open game menu">☰</button>
         </header>
         <aside class="needs-card">
@@ -289,11 +292,24 @@ export class SheppertonApp {
   };
 
   private handleGameControl(action: string): void {
+    if (action === 'rotate-view') {
+      this.world?.scene.rotateView();
+      return;
+    }
     if (action === 'interact') this.world?.scene.interact();
     if (action === 'inventory') this.openInventory();
     if (action === 'stats') this.openStats();
     if (action === 'objectives') this.openObjectives();
     if (action === 'menu') this.openGameMenu();
+  }
+
+  private updateViewOrientation(orientation: ViewOrientation): void {
+    const labels: Record<ViewOrientation, string> = { north: 'N', east: 'E', south: 'S', west: 'W' };
+    const names: Record<ViewOrientation, string> = { north: 'North', east: 'East', south: 'South', west: 'West' };
+    const indicator = this.root.querySelector<HTMLElement>('[data-view-orientation]');
+    const button = indicator?.closest<HTMLButtonElement>('.view-rotate');
+    if (indicator) indicator.textContent = labels[orientation];
+    if (button) button.setAttribute('aria-label', `Rotate view. ${names[orientation]} is currently at the top`);
   }
 
   private updateInteraction(locationId: string | null): void {

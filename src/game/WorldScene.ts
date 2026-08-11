@@ -3,6 +3,7 @@ import { locationById } from '../core/content';
 import { HOME_POSITION } from '../core/defaultState';
 import type { GameEngine } from '../core/gameEngine';
 import { BUILDINGS, INTERACTIONS, WORLD_HEIGHT, WORLD_WIDTH } from './worldData';
+import { screenToWorldDirection, VIEW_ORIENTATIONS, type ViewOrientation } from './viewRotation';
 
 export interface DirectionState {
   up: boolean;
@@ -15,6 +16,7 @@ interface WorldCallbacks {
   onNearbyLocation: (locationId: string | null) => void;
   onInteract: (locationId: string) => void;
   onLeftHome: () => void;
+  onViewOrientationChanged: (orientation: ViewOrientation) => void;
 }
 
 export class WorldScene extends Phaser.Scene {
@@ -25,6 +27,8 @@ export class WorldScene extends Phaser.Scene {
   private nearbyLocation: string | null = null;
   private startedAwayFromHome = false;
   private facing: 'north' | 'south' | 'east' | 'west' = 'south';
+  private viewOrientation: ViewOrientation = 'north';
+  private readonly worldLabels: Phaser.GameObjects.Text[] = [];
   readonly touch: DirectionState = { up: false, down: false, left: false, right: false };
 
   constructor(private readonly engine: GameEngine, private readonly callbacks: WorldCallbacks) {
@@ -65,6 +69,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
     this.cameras.main.setZoom(1.05);
     this.cameras.main.fadeIn(450, 23, 63, 53);
+    this.applyViewOrientation();
   }
 
   update(): void {
@@ -73,7 +78,9 @@ export class WorldScene extends Phaser.Scene {
     const right = this.cursors.right.isDown || this.wasd.right.isDown || this.touch.right;
     const up = this.cursors.up.isDown || this.wasd.up.isDown || this.touch.up;
     const down = this.cursors.down.isDown || this.wasd.down.isDown || this.touch.down;
-    const vector = new Phaser.Math.Vector2(Number(right) - Number(left), Number(down) - Number(up));
+    const screenDirection = { x: Number(right) - Number(left), y: Number(down) - Number(up) };
+    const worldDirection = screenToWorldDirection(screenDirection.x, screenDirection.y, this.viewOrientation);
+    const vector = new Phaser.Math.Vector2(worldDirection.x, worldDirection.y);
     if (vector.lengthSq() > 0) {
       vector.normalize().scale(190);
       this.player.setVelocity(vector.x, vector.y);
@@ -95,6 +102,18 @@ export class WorldScene extends Phaser.Scene {
 
   interact(): void {
     if (this.nearbyLocation) this.callbacks.onInteract(this.nearbyLocation);
+  }
+
+  rotateView(): void {
+    const currentIndex = VIEW_ORIENTATIONS.indexOf(this.viewOrientation);
+    this.viewOrientation = VIEW_ORIENTATIONS[(currentIndex + 1) % VIEW_ORIENTATIONS.length];
+    for (const direction of Object.keys(this.touch) as (keyof DirectionState)[]) this.touch[direction] = false;
+    this.player?.setVelocity(0, 0);
+    this.applyViewOrientation();
+  }
+
+  getViewOrientation(): ViewOrientation {
+    return this.viewOrientation;
   }
 
   pauseWorld(): void {
@@ -156,8 +175,10 @@ export class WorldScene extends Phaser.Scene {
       else this.drawBuilding(graphics, building);
     }
     this.drawDecorations(graphics);
-    this.add.text(70, 455, 'ORCHARD GREEN', { fontFamily: 'system-ui', fontSize: '18px', color: '#173f35', fontStyle: 'bold' }).setDepth(4);
-    this.add.text(65, 945, 'RIVER ASH', { fontFamily: 'system-ui', fontSize: '16px', color: '#d8f2f5', fontStyle: 'bold' }).setDepth(4);
+    this.worldLabels.push(
+      this.add.text(70, 455, 'ORCHARD GREEN', { fontFamily: 'system-ui', fontSize: '18px', color: '#173f35', fontStyle: 'bold' }).setDepth(4),
+      this.add.text(65, 945, 'RIVER ASH', { fontFamily: 'system-ui', fontSize: '16px', color: '#d8f2f5', fontStyle: 'bold' }).setDepth(4),
+    );
   }
 
   private drawRailway(graphics: Phaser.GameObjects.Graphics): void {
@@ -175,6 +196,7 @@ export class WorldScene extends Phaser.Scene {
     const sign = this.add.text(building.x + building.width / 2, building.y + 50, building.name.toUpperCase(), {
       fontFamily: 'system-ui', fontSize: building.width < 185 ? '9px' : '10px', color: '#173f35', fontStyle: 'bold', align: 'center', wordWrap: { width: 86 },
     }).setOrigin(0.5).setDepth(5);
+    this.worldLabels.push(sign);
     if (!building.locationId) sign.setAlpha(0.65);
     if (building.locationId) {
       const entry = INTERACTIONS.find((item) => item.locationId === building.locationId);
@@ -215,9 +237,10 @@ export class WorldScene extends Phaser.Scene {
     }
 
     graphics.fillStyle(building.sign).fillRoundedRect(building.x + 29, doorY - 44, 108, 25, 4);
-    this.add.text(building.x + 83, doorY - 31, 'SHEPPERTON\nVILLAGE HALL', {
+    const sign = this.add.text(building.x + 83, doorY - 31, 'SHEPPERTON\nVILLAGE HALL', {
       fontFamily: 'system-ui', fontSize: '9px', color: '#173f35', fontStyle: 'bold', align: 'center', lineSpacing: -3,
     }).setOrigin(0.5).setDepth(5);
+    this.worldLabels.push(sign);
 
     // The interaction marker sits on the walkable pavement immediately outside the visible doors.
     const entry = INTERACTIONS.find((item) => item.locationId === building.locationId);
@@ -242,6 +265,13 @@ export class WorldScene extends Phaser.Scene {
     for (const [direction, idleFrame] of Object.entries(frameByDirection)) {
       this.anims.create({ key: `walk-${direction}`, frames: [{ key: 'player-avatar', frame: idleFrame }, { key: 'player-avatar', frame: idleFrame + 4 }], frameRate: 7, repeat: -1 });
     }
+  }
+
+  private applyViewOrientation(): void {
+    const quarterTurns = VIEW_ORIENTATIONS.indexOf(this.viewOrientation);
+    this.cameras.main.setRotation(-quarterTurns * Math.PI / 2);
+    for (const label of this.worldLabels) label.setRotation(quarterTurns * Math.PI / 2);
+    this.callbacks.onViewOrientationChanged(this.viewOrientation);
   }
 }
 
