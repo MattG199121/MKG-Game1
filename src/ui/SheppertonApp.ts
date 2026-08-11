@@ -262,9 +262,9 @@ export class SheppertonApp {
           <button data-game="stats">★<span>Stats</span></button>
           <button data-game="objectives">✓<span>Goals</span></button>
         </nav>
-        <div id="toast-region" class="toast-region" aria-live="assertive"></div>
         <div class="rotate-hint"><div>↻</div><strong>Turn your iPad sideways</strong><span>Landscape gives you the best view of Shepperton.</span></div>
-      </main>`;
+      </main>
+      <div id="toast-region" class="toast-region" aria-live="assertive"></div>`;
   }
 
   private bindGameControls(): void {
