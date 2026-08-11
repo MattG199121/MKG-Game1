@@ -2,6 +2,10 @@ export type ViewOrientation = 'north' | 'east' | 'south' | 'west';
 
 export const VIEW_ORIENTATIONS: readonly ViewOrientation[] = ['north', 'east', 'south', 'west'];
 
+export function avatarCounterRotation(orientation: ViewOrientation): number {
+  return VIEW_ORIENTATIONS.indexOf(orientation) * Math.PI / 2;
+}
+
 export function screenToWorldDirection(x: number, y: number, orientation: ViewOrientation): { x: number; y: number } {
   let result = { x, y };
   if (orientation === 'east') result = { x: -y, y: x };
