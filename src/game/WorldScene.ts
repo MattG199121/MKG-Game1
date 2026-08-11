@@ -4,6 +4,7 @@ import { HOME_POSITION } from '../core/defaultState';
 import type { GameEngine } from '../core/gameEngine';
 import { BUILDINGS, INTERACTIONS, WORLD_HEIGHT, WORLD_WIDTH } from './worldData';
 import { avatarCounterRotation, screenFacingDirection, screenToWorldDirection, VIEW_ORIENTATIONS, type ScreenFacing, type ViewOrientation } from './viewRotation';
+import { HALL_BASE_DEPTH, villageHallForegroundDepth, villageHallPresentation } from './villageHallPresentation';
 
 export interface DirectionState {
   up: boolean;
@@ -28,6 +29,8 @@ export class WorldScene extends Phaser.Scene {
   private startedAwayFromHome = false;
   private facing: ScreenFacing = 'north';
   private viewOrientation: ViewOrientation = 'north';
+  private villageHallBase!: Phaser.GameObjects.Image;
+  private villageHallForeground!: Phaser.GameObjects.Image;
   private readonly worldLabels: Phaser.GameObjects.Text[] = [];
   readonly touch: DirectionState = { up: false, down: false, left: false, right: false };
 
@@ -38,6 +41,10 @@ export class WorldScene extends Phaser.Scene {
   preload(): void {
     const avatarId = this.engine.getState().player.avatarId;
     this.load.spritesheet('player-avatar', `${import.meta.env.BASE_URL}avatars/${avatarId}.png`, { frameWidth: 36, frameHeight: 54 });
+    for (const orientation of VIEW_ORIENTATIONS) {
+      this.load.image(`village-hall-${orientation}-base`, `${import.meta.env.BASE_URL}village-hall/village-hall-${orientation}-base.png`);
+      this.load.image(`village-hall-${orientation}-foreground`, `${import.meta.env.BASE_URL}village-hall/village-hall-${orientation}-foreground.png`);
+    }
   }
 
   create(): void {
@@ -100,6 +107,7 @@ export class WorldScene extends Phaser.Scene {
       this.callbacks.onLeftHome();
     }
     this.checkNearby();
+    this.updateVillageHallDepth();
   }
 
   interact(): void {
@@ -173,7 +181,7 @@ export class WorldScene extends Phaser.Scene {
     this.drawRailway(graphics);
 
     for (const building of BUILDINGS) {
-      if (building.id === 'hall-building') this.drawVillageHall(graphics, building);
+      if (building.id === 'hall-building') this.drawVillageHall(building);
       else this.drawBuilding(graphics, building);
     }
     this.drawDecorations(graphics);
@@ -209,44 +217,39 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  private drawVillageHall(graphics: Phaser.GameObjects.Graphics, building: (typeof BUILDINGS)[number]): void {
-    const doorY = 730;
-    const sage = 0x78937f;
-    const sageDark = 0x526b5a;
-    const cream = building.wall;
+  private drawVillageHall(building: (typeof BUILDINGS)[number]): void {
+    const presentation = villageHallPresentation(building, this.viewOrientation);
+    const originY = 450 / 512;
+    this.villageHallBase = this.add.image(presentation.anchor.x, presentation.anchor.y, presentation.baseTexture)
+      .setOrigin(0.5, originY)
+      .setDepth(HALL_BASE_DEPTH);
+    this.villageHallForeground = this.add.image(presentation.anchor.x, presentation.anchor.y, presentation.foregroundTexture)
+      .setOrigin(0.5, originY);
+    this.applyVillageHallPresentation();
 
-    // A north-south footprint set behind the eastern pavement, with its frontage facing west.
-    graphics.fillStyle(0x000000, 0.16).fillRoundedRect(building.x + 8, building.y + 10, building.width, building.height, 10);
-    graphics.fillStyle(cream).fillRoundedRect(building.x, building.y, building.width, building.height, 8);
-    graphics.fillStyle(building.roof).fillRoundedRect(building.x + 24, building.y - 5, building.width - 48, building.height + 10, 8);
-    graphics.fillStyle(0x394842).fillTriangle(building.x + 24, building.y, building.x + building.width / 2, building.y + 18, building.x + building.width - 24, building.y);
-    graphics.fillStyle(0x394842).fillTriangle(building.x + 24, building.y + building.height, building.x + building.width / 2, building.y + building.height - 18, building.x + building.width - 24, building.y + building.height);
-
-    // Sage frontage, projecting entrance gable and west-facing double doors.
-    graphics.fillStyle(sage).fillRect(building.x, building.y + 20, 10, building.height - 40);
-    graphics.fillStyle(cream).fillRoundedRect(building.x - 8, doorY - 34, 34, 68, 5);
-    graphics.fillStyle(building.roof).fillTriangle(building.x - 12, doorY - 34, building.x + 9, doorY - 53, building.x + 30, doorY - 34);
-    graphics.fillStyle(sageDark).fillRoundedRect(building.x - 9, doorY - 22, 16, 44, 3).fillRoundedRect(building.x + 8, doorY - 22, 16, 44, 3);
-    graphics.lineStyle(2, 0xe7f0e8, 0.9).lineBetween(building.x + 7, doorY - 20, building.x + 7, doorY + 20);
-
-    // Two front windows and flower boxes, matching the chosen cream-and-sage concept.
-    for (const windowY of [doorY - 77, doorY + 77]) {
-      graphics.fillStyle(sageDark).fillRoundedRect(building.x - 2, windowY - 18, 15, 36, 2);
-      graphics.fillStyle(0xb9dded).fillRect(building.x, windowY - 15, 10, 29);
-      graphics.lineStyle(1, 0xf7f1df, 1).lineBetween(building.x + 5, windowY - 14, building.x + 5, windowY + 13);
-      graphics.fillStyle(0x8a6248).fillRect(building.x - 3, windowY + 15, 17, 5);
-      graphics.fillStyle(0xc86279).fillCircle(building.x + 1, windowY + 14, 3).fillCircle(building.x + 8, windowY + 14, 3);
-    }
-
-    graphics.fillStyle(building.sign).fillRoundedRect(building.x + 29, doorY - 44, 108, 25, 4);
-    const sign = this.add.text(building.x + 83, doorY - 31, 'SHEPPERTON\nVILLAGE HALL', {
-      fontFamily: 'system-ui', fontSize: '9px', color: '#173f35', fontStyle: 'bold', align: 'center', lineSpacing: -3,
-    }).setOrigin(0.5).setDepth(5);
-    this.worldLabels.push(sign);
-
-    // The interaction marker sits on the walkable pavement immediately outside the visible doors.
+    // Preserve the existing interaction marker on the walkable pavement outside the doors.
     const entry = INTERACTIONS.find((item) => item.locationId === building.locationId);
-    if (entry) graphics.fillStyle(building.sign).fillCircle(entry.point.x, entry.point.y, 7);
+    if (entry) this.add.circle(entry.point.x, entry.point.y, 7, building.sign).setDepth(45);
+  }
+
+  private applyVillageHallPresentation(): void {
+    if (!this.villageHallBase || !this.villageHallForeground) return;
+    const hall = BUILDINGS.find((building) => building.id === 'hall-building');
+    if (!hall) return;
+    const presentation = villageHallPresentation(hall, this.viewOrientation);
+    for (const [image, texture] of [
+      [this.villageHallBase, presentation.baseTexture],
+      [this.villageHallForeground, presentation.foregroundTexture],
+    ] as const) {
+      image.setPosition(presentation.anchor.x, presentation.anchor.y).setTexture(texture).setRotation(presentation.rotation);
+    }
+    this.updateVillageHallDepth();
+  }
+
+  private updateVillageHallDepth(): void {
+    if (!this.player || !this.villageHallForeground) return;
+    const hall = BUILDINGS.find((building) => building.id === 'hall-building');
+    if (hall) this.villageHallForeground.setDepth(villageHallForegroundDepth(this.player, hall, this.viewOrientation));
   }
 
   private drawDecorations(graphics: Phaser.GameObjects.Graphics): void {
@@ -275,6 +278,7 @@ export class WorldScene extends Phaser.Scene {
     for (const label of this.worldLabels) label.setRotation(quarterTurns * Math.PI / 2);
     this.facing = 'north';
     if (this.player) this.player.setRotation(avatarCounterRotation(this.viewOrientation)).stop().setTexture('player-avatar').setFrame(1);
+    this.applyVillageHallPresentation();
     this.callbacks.onViewOrientationChanged(this.viewOrientation);
   }
 }
