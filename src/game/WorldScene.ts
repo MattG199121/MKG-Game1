@@ -146,7 +146,10 @@ export class WorldScene extends Phaser.Scene {
     graphics.lineStyle(4, 0x6b5a43, 1).lineBetween(0, 920, WORLD_WIDTH, 920);
     this.drawRailway(graphics);
 
-    for (const building of BUILDINGS) this.drawBuilding(graphics, building);
+    for (const building of BUILDINGS) {
+      if (building.id === 'hall-building') this.drawVillageHall(graphics, building);
+      else this.drawBuilding(graphics, building);
+    }
     this.drawDecorations(graphics);
     this.add.text(70, 455, 'ORCHARD GREEN', { fontFamily: 'system-ui', fontSize: '18px', color: '#173f35', fontStyle: 'bold' }).setDepth(4);
     this.add.text(65, 945, 'RIVER ASH', { fontFamily: 'system-ui', fontSize: '16px', color: '#d8f2f5', fontStyle: 'bold' }).setDepth(4);
@@ -175,6 +178,45 @@ export class WorldScene extends Phaser.Scene {
         graphics.fillStyle(building.sign).fillCircle(entry.point.x, entry.point.y, 7);
       }
     }
+  }
+
+  private drawVillageHall(graphics: Phaser.GameObjects.Graphics, building: (typeof BUILDINGS)[number]): void {
+    const doorY = 730;
+    const sage = 0x78937f;
+    const sageDark = 0x526b5a;
+    const cream = building.wall;
+
+    // A north-south footprint set behind the eastern pavement, with its frontage facing west.
+    graphics.fillStyle(0x000000, 0.16).fillRoundedRect(building.x + 8, building.y + 10, building.width, building.height, 10);
+    graphics.fillStyle(cream).fillRoundedRect(building.x, building.y, building.width, building.height, 8);
+    graphics.fillStyle(building.roof).fillRoundedRect(building.x + 24, building.y - 5, building.width - 48, building.height + 10, 8);
+    graphics.fillStyle(0x394842).fillTriangle(building.x + 24, building.y, building.x + building.width / 2, building.y + 18, building.x + building.width - 24, building.y);
+    graphics.fillStyle(0x394842).fillTriangle(building.x + 24, building.y + building.height, building.x + building.width / 2, building.y + building.height - 18, building.x + building.width - 24, building.y + building.height);
+
+    // Sage frontage, projecting entrance gable and west-facing double doors.
+    graphics.fillStyle(sage).fillRect(building.x, building.y + 20, 10, building.height - 40);
+    graphics.fillStyle(cream).fillRoundedRect(building.x - 8, doorY - 34, 34, 68, 5);
+    graphics.fillStyle(building.roof).fillTriangle(building.x - 12, doorY - 34, building.x + 9, doorY - 53, building.x + 30, doorY - 34);
+    graphics.fillStyle(sageDark).fillRoundedRect(building.x - 9, doorY - 22, 16, 44, 3).fillRoundedRect(building.x + 8, doorY - 22, 16, 44, 3);
+    graphics.lineStyle(2, 0xe7f0e8, 0.9).lineBetween(building.x + 7, doorY - 20, building.x + 7, doorY + 20);
+
+    // Two front windows and flower boxes, matching the chosen cream-and-sage concept.
+    for (const windowY of [doorY - 77, doorY + 77]) {
+      graphics.fillStyle(sageDark).fillRoundedRect(building.x - 2, windowY - 18, 15, 36, 2);
+      graphics.fillStyle(0xb9dded).fillRect(building.x, windowY - 15, 10, 29);
+      graphics.lineStyle(1, 0xf7f1df, 1).lineBetween(building.x + 5, windowY - 14, building.x + 5, windowY + 13);
+      graphics.fillStyle(0x8a6248).fillRect(building.x - 3, windowY + 15, 17, 5);
+      graphics.fillStyle(0xc86279).fillCircle(building.x + 1, windowY + 14, 3).fillCircle(building.x + 8, windowY + 14, 3);
+    }
+
+    graphics.fillStyle(building.sign).fillRoundedRect(building.x + 29, doorY - 44, 108, 25, 4);
+    this.add.text(building.x + 83, doorY - 31, 'SHEPPERTON\nVILLAGE HALL', {
+      fontFamily: 'system-ui', fontSize: '9px', color: '#173f35', fontStyle: 'bold', align: 'center', lineSpacing: -3,
+    }).setOrigin(0.5).setDepth(5);
+
+    // The interaction marker sits on the walkable pavement immediately outside the visible doors.
+    const entry = INTERACTIONS.find((item) => item.locationId === building.locationId);
+    if (entry) graphics.fillStyle(building.sign).fillCircle(entry.point.x, entry.point.y, 7);
   }
 
   private drawDecorations(graphics: Phaser.GameObjects.Graphics): void {
