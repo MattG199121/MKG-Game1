@@ -3,7 +3,7 @@ import { locationById } from '../core/content';
 import { HOME_POSITION } from '../core/defaultState';
 import type { GameEngine } from '../core/gameEngine';
 import { BUILDINGS, INTERACTIONS, WORLD_HEIGHT, WORLD_WIDTH } from './worldData';
-import { avatarCounterRotation, screenToWorldDirection, VIEW_ORIENTATIONS, type ViewOrientation } from './viewRotation';
+import { avatarCounterRotation, screenFacingDirection, screenToWorldDirection, VIEW_ORIENTATIONS, type ScreenFacing, type ViewOrientation } from './viewRotation';
 
 export interface DirectionState {
   up: boolean;
@@ -26,7 +26,7 @@ export class WorldScene extends Phaser.Scene {
   private obstacles!: Phaser.Physics.Arcade.StaticGroup;
   private nearbyLocation: string | null = null;
   private startedAwayFromHome = false;
-  private facing: 'north' | 'south' | 'east' | 'west' = 'north';
+  private facing: ScreenFacing = 'north';
   private viewOrientation: ViewOrientation = 'north';
   private readonly worldLabels: Phaser.GameObjects.Text[] = [];
   readonly touch: DirectionState = { up: false, down: false, left: false, right: false };
@@ -84,9 +84,11 @@ export class WorldScene extends Phaser.Scene {
     if (vector.lengthSq() > 0) {
       vector.normalize().scale(190);
       this.player.setVelocity(vector.x, vector.y);
-      const direction = 'north';
-      this.facing = direction;
-      this.player.play(`walk-${direction}`, true);
+      const direction = screenFacingDirection(screenDirection.x, screenDirection.y);
+      if (direction) {
+        this.facing = direction;
+        this.player.play(`walk-${direction}`, true);
+      }
     } else {
       this.player.setVelocity(0, 0);
       this.player.stop().setTexture('player-avatar').setFrame({ south: 0, north: 1, west: 2, east: 3 }[this.facing]);
