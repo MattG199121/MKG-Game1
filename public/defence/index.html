@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#15110c" />
+    <title>Medieval Castle Defence</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Georgia, 'Times New Roman', serif;
+        background: #15110c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; background: #15110c; }
+      body {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        color: #f4ead0;
+        background:
+          radial-gradient(circle at 50% 15%, rgba(255, 190, 90, .14), transparent 34%),
+          linear-gradient(rgba(13, 11, 8, .35), rgba(8, 7, 5, .84)),
+          linear-gradient(160deg, #2f281d 0%, #19140e 45%, #0d0b08 100%);
+      }
+      .scene {
+        position: relative;
+        width: min(100vw, 1440px);
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+        isolation: isolate;
+      }
+      .scene::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        background:
+          linear-gradient(to top, rgba(5,5,4,.98) 0 14%, transparent 42%),
+          radial-gradient(ellipse at center 82%, #3d3528 0 14%, transparent 15%),
+          linear-gradient(90deg, transparent 0 7%, rgba(4,4,3,.72) 7% 13%, transparent 13% 87%, rgba(4,4,3,.72) 87% 93%, transparent 93%),
+          linear-gradient(to top, transparent 0 44%, rgba(0,0,0,.28) 44% 45%, transparent 45%);
+        opacity: .95;
+      }
+      .castle {
+        position: absolute;
+        bottom: 5%;
+        left: 50%;
+        width: min(78vw, 980px);
+        height: 34vh;
+        transform: translateX(-50%);
+        z-index: -1;
+        opacity: .52;
+        filter: drop-shadow(0 16px 30px #000);
+      }
+      .castle .keep, .castle .tower {
+        position: absolute;
+        bottom: 0;
+        background: linear-gradient(#81745e, #4e4638 62%, #2b261f);
+        border: 2px solid rgba(10,8,5,.9);
+      }
+      .castle .keep { left: 26%; width: 48%; height: 74%; }
+      .castle .tower { width: 21%; height: 94%; }
+      .castle .tower.left { left: 5%; }
+      .castle .tower.right { right: 5%; }
+      .castle .keep::before, .castle .tower::before {
+        content: '';
+        position: absolute;
+        left: -2px; right: -2px; top: -16px; height: 18px;
+        background: repeating-linear-gradient(90deg, #746955 0 22px, transparent 22px 32px);
+      }
+      .gate {
+        position: absolute;
+        left: 43%; bottom: 0;
+        width: 14%; height: 38%;
+        border-radius: 50% 50% 0 0 / 35% 35% 0 0;
+        background: #17120c;
+        box-shadow: inset 0 0 0 5px #332a20;
+      }
+      .panel {
+        width: min(560px, 92vw);
+        padding: clamp(24px, 4vw, 44px);
+        border: 1px solid rgba(225, 190, 119, .4);
+        background: linear-gradient(180deg, rgba(27,22,15,.92), rgba(15,12,8,.95));
+        box-shadow: 0 24px 80px rgba(0,0,0,.5), inset 0 0 0 3px rgba(100,76,39,.18);
+        text-align: center;
+        backdrop-filter: blur(5px);
+      }
+      .eyebrow {
+        margin: 0 0 8px;
+        font: 700 .78rem/1.1 system-ui, sans-serif;
+        letter-spacing: .24em;
+        text-transform: uppercase;
+        color: #c7a668;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2.2rem, 7vw, 4.8rem);
+        line-height: .9;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        text-shadow: 0 3px 0 #25180c, 0 8px 28px #000;
+      }
+      .subtitle {
+        margin: 14px auto 24px;
+        max-width: 34ch;
+        color: #d2c5a9;
+        font: 500 clamp(.92rem, 2vw, 1.05rem)/1.45 system-ui, sans-serif;
+      }
+      .menu { display: grid; gap: 11px; }
+      button {
+        width: 100%;
+        min-height: 54px;
+        border: 1px solid #94753f;
+        border-radius: 3px;
+        padding: 12px 18px;
+        background: linear-gradient(#6c4f27, #3d2b17);
+        color: #fff3d1;
+        font: 700 clamp(1rem, 2vw, 1.12rem)/1 system-ui, sans-serif;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        box-shadow: inset 0 1px rgba(255,255,255,.16), 0 5px 18px rgba(0,0,0,.28);
+        touch-action: manipulation;
+      }
+      button:not(:disabled):active { transform: translateY(1px); }
+      button:disabled {
+        cursor: default;
+        opacity: .46;
+        filter: saturate(.45);
+      }
+      .status {
+        margin: 18px 0 0;
+        color: #a89d86;
+        font: 600 .75rem/1.4 system-ui, sans-serif;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      @media (max-height: 620px) and (orientation: landscape) {
+        .scene { place-items: center; }
+        .panel { width: min(760px, 86vw); padding: 20px 28px; }
+        h1 { font-size: clamp(2rem, 7vh, 3.5rem); }
+        .subtitle { margin: 9px auto 15px; }
+        .menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .menu button:first-child { grid-column: 1 / -1; }
+        button { min-height: 46px; }
+        .status { margin-top: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="scene" aria-label="Medieval Castle Defence title screen">
+      <div class="castle" aria-hidden="true">
+        <div class="tower left"></div>
+        <div class="keep"><div class="gate"></div></div>
+        <div class="tower right"></div>
+      </div>
+      <section class="panel">
+        <p class="eyebrow">The Kingdom Awaits</p>
+        <h1>Medieval<br />Castle Defence</h1>
+        <p class="subtitle">Hold the walls. Build the defences. Survive the siege.</p>
+        <nav class="menu" aria-label="Main menu">
+          <button id="new-game" type="button">New Game</button>
+          <button type="button" disabled>Continue — Coming Soon</button>
+          <button type="button" disabled>Level Select — Coming Soon</button>
+          <button type="button" disabled>Upgrades — Coming Soon</button>
+          <button type="button" disabled>Settings — Coming Soon</button>
+        </nav>
+        <p class="status" id="status">Initial game shell · No gameplay built yet</p>
+      </section>
+    </main>
+    <script>
+      const newGame = document.getElementById('new-game');
+      const status = document.getElementById('status');
+      newGame.addEventListener('click', () => {
+        status.textContent = 'Gameplay Version 1 is not built yet';
+      });
+    </script>
+  </body>
+</html>
