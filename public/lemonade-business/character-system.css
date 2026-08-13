@@ -1,0 +1,95 @@
+/* Lemonade Business Tycoon character system */
+.customer.lbt-customer-character{
+  width:58px;
+  height:98px;
+  font-size:0;
+  display:block;
+  transform:none;
+  filter:none;
+  transition:left .92s linear,bottom .24s ease,opacity .2s ease;
+  will-change:left;
+  pointer-events:none;
+}
+.lbt-character-wrap{
+  width:58px;
+  height:98px;
+  display:block;
+  transform-origin:50% 100%;
+  filter:drop-shadow(0 4px 3px rgba(0,0,0,.18));
+}
+.lbt-character-svg{width:100%;height:100%;overflow:visible;display:block}
+.lbt-character-svg .lbt-leg,.lbt-character-svg .lbt-arm{
+  transform-box:fill-box;
+  transform-origin:50% 8%;
+}
+.customer.lbt-walking .lbt-character-wrap{animation:lbt-body-bob .34s ease-in-out infinite alternate}
+.customer.lbt-walking .lbt-leg-left{animation:lbt-leg-left .42s ease-in-out infinite alternate}
+.customer.lbt-walking .lbt-leg-right{animation:lbt-leg-right .42s ease-in-out infinite alternate}
+.customer.lbt-walking .lbt-arm-left{animation:lbt-arm-left .42s ease-in-out infinite alternate}
+.customer.lbt-walking .lbt-arm-right{animation:lbt-arm-right .42s ease-in-out infinite alternate}
+.customer.lbt-queued .lbt-character-wrap{animation:lbt-queue-idle 1.4s ease-in-out infinite alternate}
+.customer.lbt-happy .lbt-character-wrap{animation:lbt-happy-hop .28s ease-in-out 2 alternate}
+.customer.lbt-unhappy .lbt-character-wrap{filter:drop-shadow(0 4px 3px rgba(0,0,0,.18)) saturate(.85)}
+.customer.lbt-stockout .lbt-character-wrap,.customer.lbt-impatient .lbt-character-wrap{animation:lbt-shake .18s ease-in-out 2 alternate}
+.customer.lbt-exiting{opacity:.96}
+.sim-area.reduced .customer.lbt-customer-character{transition-duration:.18s}
+.sim-area.reduced .customer .lbt-character-wrap,
+.sim-area.reduced .customer .lbt-leg,
+.sim-area.reduced .customer .lbt-arm{animation:none!important}
+.thought{
+  bottom:165px;
+  max-width:148px;
+  z-index:18;
+  border-radius:14px;
+  font-size:10px;
+  line-height:1.2;
+  padding:7px 9px;
+  transform:translateY(-2px);
+}
+.thought:after{
+  content:"";
+  position:absolute;
+  left:19px;
+  bottom:-6px;
+  width:10px;
+  height:10px;
+  background:#fff;
+  border-right:1px solid #D5D9D0;
+  border-bottom:1px solid #D5D9D0;
+  transform:rotate(45deg);
+}
+.lbt-avatar-portrait{
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  background:linear-gradient(145deg,#FFF5B8,#E8F7ED)!important;
+}
+.lbt-avatar-portrait .lbt-character-svg{
+  width:100%;
+  height:100%;
+  transform:scale(1.12) translateY(6%);
+}
+.pe-avatar.lbt-avatar-portrait{width:48px;height:48px;border-radius:15px}
+.hq-avatar.lbt-avatar-portrait{width:46px;height:46px;border-radius:14px}
+.hq-big-avatar.lbt-avatar-portrait{width:76px;height:76px;border-radius:20px}
+@keyframes lbt-body-bob{from{transform:translateY(0) rotate(-.5deg)}to{transform:translateY(-2px) rotate(.5deg)}}
+@keyframes lbt-leg-left{from{transform:rotate(13deg)}to{transform:rotate(-13deg)}}
+@keyframes lbt-leg-right{from{transform:rotate(-13deg)}to{transform:rotate(13deg)}}
+@keyframes lbt-arm-left{from{transform:rotate(-8deg)}to{transform:rotate(10deg)}}
+@keyframes lbt-arm-right{from{transform:rotate(10deg)}to{transform:rotate(-8deg)}}
+@keyframes lbt-queue-idle{from{transform:translateY(0)}to{transform:translateY(-1.5px)}}
+@keyframes lbt-happy-hop{from{transform:translateY(0) scale(1)}to{transform:translateY(-8px) scale(1.04)}}
+@keyframes lbt-shake{from{transform:translateX(-2px) rotate(-2deg)}to{transform:translateX(2px) rotate(2deg)}}
+@media (max-width:380px){
+  .customer.lbt-customer-character{width:52px;height:90px}
+  .lbt-character-wrap{width:52px;height:90px}
+  .thought{bottom:156px;max-width:132px;font-size:9px}
+}
+@media (min-width:700px){
+  .customer.lbt-customer-character{width:64px;height:105px}
+  .lbt-character-wrap{width:64px;height:105px}
+}
+@media (prefers-reduced-motion:reduce){
+  .customer .lbt-character-wrap,.customer .lbt-leg,.customer .lbt-arm{animation:none!important}
+}
